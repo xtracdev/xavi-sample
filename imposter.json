@@ -1,0 +1,32 @@
+{
+  "port": 4545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "body": "<SOAP-ENV:Envelope
+  xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"
+  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">
+   <SOAP-ENV:Body>
+       <m:GetLastTradePriceResponse xmlns:m=\"Some-URI\">
+           <Price>34.5</Price>
+       </m:GetLastTradePriceResponse>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>\n"
+          }
+        }
+      ],
+      "predicates": [
+              {
+                "and": [
+                  {"equals": {"path": "/services/quote/getquote","method": "POST"}},
+                  { "contains": { "body": "Envelope" } }
+                ]
+              }
+            ]
+    }
+  ]
+}
