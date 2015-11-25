@@ -104,7 +104,7 @@ export XAVI_KVSTORE_URL=file:///`pwd`/config
 <pre>
 ./xavisample add-server -address localhost -port 4545 -name quotesvr1
 ./xavisample add-backend -name quote-backend -servers quotesvr1
-./xavisample add-route -name quote-route -backend quote-backend -base-uri /quote/ -plugins Quote
+./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote
 ./xavisample add-listener -name quote-listener -routes quote-route
 </pre>
 
