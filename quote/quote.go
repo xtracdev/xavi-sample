@@ -5,8 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/xtracdev/xavi/plugin"
-	"github.com/xtracdev/xavisample/session"
-	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -29,15 +27,8 @@ func NewQuoteWrapper() plugin.Wrapper {
 
 type QuoteWrapper struct{}
 
-func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
-	return plugin.ContextHandlerFunc(func(c context.Context, w http.ResponseWriter, r *http.Request) {
-
-		if c != nil {
-			sessionId, ok := c.Value(session.SessionKey).(int)
-			if ok {
-				println("session id:", sessionId)
-			}
-		}
+func (lw QuoteWrapper) Wrap(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		//Grab the symbol to quote from the uri
 		resourceId, err := extractResource(r.RequestURI)
@@ -64,7 +55,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		r.Body = ioutil.NopCloser(bytes.NewReader(payloadBytes))
 		rec := httptest.NewRecorder()
 
-		h.ServeHTTPContext(c, rec, r)
+		h.ServeHTTP(rec, r)
 
 		//Parse the recorded response to allow the quote price to be extracted
 		var response ResponseEnvelope

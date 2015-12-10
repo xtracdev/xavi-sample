@@ -5,7 +5,8 @@ of a soap service using [Xavi](https://github.com/xtracdev/xavi).
 
 ### Building the Sample
 
-Building the sample involves cloning the sample, go getting the golang net context package, and building:
+Building the sample involves cloning the sample and xavi projects, restoring the xavi dependencies via
+godep, then building the sample:
 
 <pre>
 $ cd 
@@ -15,8 +16,12 @@ $ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 $ export GO15VENDOREXPERIMENT=1
 $ cd gosamplexavi/src/github.com/xtracdev
 $ git clone https://github.com/xtracdev/xavisample
+$ git clone https://github.com/xtracdev/xavi
+$ go get github.com/tools/godep
+$ cd xavi
 $ export http_proxy=<your proxy here if you use one otherwise omit this step>
-$ go get golang.org/x/net/context
+$ godep restore
+$ cd ../xavisample/
 $ go build
 </pre>
 
@@ -121,7 +126,7 @@ export XAVI_KVSTORE_URL=file:///`pwd`/config
 <pre>
 ./xavisample add-server -address localhost -port 4545 -name quotesvr1
 ./xavisample add-backend -name quote-backend -servers quotesvr1
-./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote,SessionId
+./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote
 ./xavisample add-listener -name quote-listener -routes quote-route
 </pre>
 
