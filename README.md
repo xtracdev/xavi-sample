@@ -16,19 +16,7 @@ $ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 $ export GO15VENDOREXPERIMENT=1
 $ cd gosamplexavi/src/github.com/xtracdev
 $ git clone https://github.com/xtracdev/xavisample
-Cloning into 'xavisample'...
-remote: Counting objects: 30, done.
-remote: Total 30 (delta 0), reused 0 (delta 0), pack-reused 30
-Unpacking objects: 100% (30/30), done.
-Checking connectivity... done.
 $ git clone https://github.com/xtracdev/xavi
-Cloning into 'xavi'...
-remote: Counting objects: 1396, done.
-remote: Compressing objects: 100% (50/50), done.
-remote: Total 1396 (delta 15), reused 0 (delta 0), pack-reused 1345
-Receiving objects: 100% (1396/1396), 1.49 MiB | 248.00 KiB/s, done.
-Resolving deltas: 100% (532/532), done.
-Checking connectivity... done.
 $ go get github.com/tools/godep
 $ cd xavi
 $ export http_proxy=<your proxy here if you use one otherwise omit this step>
