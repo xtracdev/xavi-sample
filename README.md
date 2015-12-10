@@ -3,27 +3,9 @@
 This provides a sample that shows how to provide a RESTful facade on top
 of a soap service using [Xavi](https://github.com/xtracdev/xavi).
 
-### Building the Sample
+### Dependency
 
-Building the sample involves cloning the sample and xavi projects, restoring the xavi dependencies via
-godep, then building the sample:
-
-<pre>
-$ cd 
-$ mkdir -p gosamplexavi/src/github.com/xtracdev
-$ export GOPATH=$HOME/gosamplexavi
-$ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
-$ export GO15VENDOREXPERIMENT=1
-$ cd gosamplexavi/src/github.com/xtracdev
-$ git clone https://github.com/xtracdev/xavisample
-$ git clone https://github.com/xtracdev/xavi
-$ go get github.com/tools/godep
-$ cd xavi
-$ export http_proxy=<your proxy here if you use one otherwise omit this step>
-$ godep restore
-$ cd ../xavisample/
-$ go build
-</pre>
+After cloning this repo, `go get golang.org/x/net/context`
 
 ### Service Imposter
 
@@ -126,7 +108,7 @@ export XAVI_KVSTORE_URL=file:///`pwd`/config
 <pre>
 ./xavisample add-server -address localhost -port 4545 -name quotesvr1
 ./xavisample add-backend -name quote-backend -servers quotesvr1
-./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote
+./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote,SessionId
 ./xavisample add-listener -name quote-listener -routes quote-route
 </pre>
 
