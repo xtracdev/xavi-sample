@@ -3,9 +3,13 @@
 This provides a sample that shows how to provide a RESTful facade on top
 of a soap service using [Xavi](https://github.com/xtracdev/xavi).
 
-### Dependency
+### Building the Sample
 
-After cloning this repo, `go get golang.org/x/net/context`
+<pre>
+go get golang.org/x/net/context
+go get https://github.com/xtracdev/xavi
+go build
+</pre>
 
 ### Service Imposter
 
