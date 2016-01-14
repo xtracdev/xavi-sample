@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"github.com/xtracdev/xavi/plugin/timing"
 )
 
 func extractResource(uri string) (string, error) {
@@ -32,9 +33,22 @@ type QuoteWrapper struct{}
 func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 	return plugin.ContextHandlerFunc(func(c context.Context, w http.ResponseWriter, r *http.Request) {
 
+		//Extract the timer from the service context
+		end2endTimer := timing.TimerFromContext(c)
+		if end2endTimer == nil {
+			http.Error(w, "No timer in call context", http.StatusInternalServerError)
+			return
+		}
+
+		//Set the top level name we want to use for recording timings, counts, etc.
+		end2endTimer.Name = "Quote"
+
+		contributor := end2endTimer.StartContributor("quote svc plugin")
+
 		//Grab the symbol to quote from the uri
 		resourceId, err := extractResource(r.RequestURI)
 		if err != nil {
+			contributor.End(err)
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(err.Error()))
 			return
@@ -56,6 +70,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		payload := getQuoteRequestForSymbol(resourceId)
 		payloadBytes, err := xml.Marshal(&payload)
 		if err != nil {
+			contributor.End(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -70,11 +85,13 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		var response ResponseEnvelope
 		err = xml.Unmarshal(rec.Body.Bytes(), &response)
 		if err != nil {
+			contributor.End(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		//Return just the price to the caller
 		w.Write([]byte(response.Body.GetLastTradePriceResponse.Price + "\n"))
+		contributor.End(nil)
 	})
 }
