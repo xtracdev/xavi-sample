@@ -1,9 +1,10 @@
 package quote
 
 import (
+	log "github.com/Sirupsen/logrus"
+	"fmt"
 	"bytes"
 	"encoding/xml"
-	"fmt"
 	"github.com/xtracdev/xavi/plugin"
 	"github.com/xtracdev/xavisample/session"
 	"golang.org/x/net/context"
@@ -12,6 +13,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"github.com/xtracdev/xavi/plugin/timing"
+	"math/rand"
+	"time"
 )
 
 func extractResource(uri string) (string, error) {
@@ -57,7 +60,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		if c != nil {
 			sid, ok := c.Value(session.SessionKey).(int)
 			if ok {
-				println("-----> session:", sid, "symbol", resourceId)
+				log.Println("session:", sid, "symbol", resourceId)
 			}
 		}
 
@@ -80,6 +83,10 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		rec := httptest.NewRecorder()
 
 		h.ServeHTTPContext(c, rec, r)
+
+		//Throw in a random service delay
+		delay := rand.Intn(100) + 1
+		time.Sleep(time.Duration(delay) * time.Millisecond)
 
 		//Parse the recorded response to allow the quote price to be extracted
 		var response ResponseEnvelope

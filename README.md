@@ -7,6 +7,7 @@ of a soap service using [Xavi](https://github.com/xtracdev/xavi).
 
 <pre>
 go get golang.org/x/net/context
+go get github.com/Sirupsen/logrus
 go get github.com/xtracdev/xavi
 go build
 </pre>
