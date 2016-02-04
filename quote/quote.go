@@ -1,19 +1,19 @@
 package quote
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"fmt"
 	"bytes"
 	"encoding/xml"
+	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/xtracdev/xavi/plugin"
+	"github.com/xtracdev/xavi/plugin/timing"
 	"github.com/xtracdev/xavisample/session"
 	"golang.org/x/net/context"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"github.com/xtracdev/xavi/plugin/timing"
-	"math/rand"
 	"time"
 )
 
@@ -31,6 +31,15 @@ func NewQuoteWrapper() plugin.Wrapper {
 	return new(QuoteWrapper)
 }
 
+//For use in generating a variety of service names for use in exploring log management solutions,
+//we'll randomly generate a service name.
+
+var serviceNames = []string{"alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "india", "hotel"}
+
+func generateServiceName() string {
+	return serviceNames[rand.Intn(len(serviceNames))]
+}
+
 type QuoteWrapper struct{}
 
 func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
@@ -44,7 +53,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		}
 
 		//Set the top level name we want to use for recording timings, counts, etc.
-		end2endTimer.Name = "Quote"
+		end2endTimer.Name = fmt.Sprintf("%s-quote", generateServiceName())
 
 		contributor := end2endTimer.StartContributor("quote svc plugin")
 
