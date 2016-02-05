@@ -55,7 +55,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		//Set the top level name we want to use for recording timings, counts, etc.
 		end2endTimer.Name = fmt.Sprintf("%s-quote", generateServiceName())
 
-		contributor := end2endTimer.StartContributor("quote svc plugin")
+		contributor := end2endTimer.StartContributor("QuoteSvc.GetTradePrice")
 
 		//Grab the symbol to quote from the uri
 		resourceId, err := extractResource(r.RequestURI)
