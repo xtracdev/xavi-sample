@@ -91,6 +91,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		r.Body = ioutil.NopCloser(bytes.NewReader(payloadBytes))
 		rec := httptest.NewRecorder()
 
+		c = timing.AddServiceNameToContext(c, "QuoteSoapService")
 		h.ServeHTTPContext(c, rec, r)
 
 		//Throw in a random service delay
