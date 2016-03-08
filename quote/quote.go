@@ -15,6 +15,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"time"
+	"errors"
 )
 
 func extractResource(uri string) (string, error) {
@@ -64,6 +65,10 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(err.Error()))
 			return
+		}
+
+		if resourceId == "XTRAC" {
+			panic(errors.New("priceless!"))
 		}
 
 		if c != nil {

@@ -97,6 +97,18 @@ register the plugins.
 
 Refer to main.go for details.
 
+### Other Plugins
+
+Also of note is the use of some provided Xavi plugins. This sample shows how the 
+recovery plugin can be used and extended via a custom wrapper factory method
+and registering the plugin in main.go.
+
+This also shows the use of the timing plugin. The order of the plugins listed on
+the command line is significant: plugins are layered in order, with the earlier wrapped
+inside the later ones. The command line configuration below intentionally places
+the timer plugin outside the panic recovery plugin, so that we don't record timings for
+panic'd service calls.
+
 ### Xavi configuration
 
 Once the plugin and main function are available, build the application, and
@@ -113,7 +125,7 @@ export XAVI_KVSTORE_URL=file:///`pwd`/config
 <pre>
 ./xavisample add-server -address localhost -port 4545 -name quotesvr1
 ./xavisample add-backend -name quote-backend -servers quotesvr1
-./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote,SessionId
+./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote,SessionId,Timing,Recovery
 ./xavisample add-listener -name quote-listener -routes quote-route
 </pre>
 
@@ -167,4 +179,10 @@ Using the RESTful facade is much easier:
 <pre>
 curl localhost:8080/quote/foo
 34.5
+</pre>
+
+To generate a panic, use this uri
+
+<pre>
+curl localhost:8080/quote/XTRAC
 </pre>
