@@ -68,7 +68,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		}
 
 		if resourceId == "XTRAC" {
-			panic(errors.New("pricelss!"))
+			panic(errors.New("priceless!"))
 		}
 
 		if c != nil {

@@ -180,3 +180,9 @@ Using the RESTful facade is much easier:
 curl localhost:8080/quote/foo
 34.5
 </pre>
+
+To generate a panic, use this uri
+
+<pre>
+curl localhost:8080/quote/XTRAC
+</pre>
