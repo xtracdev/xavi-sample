@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+	"sync"
 )
 
 type sessionKey int
@@ -19,16 +20,21 @@ func NewSessionWrapper() plugin.Wrapper {
 
 var seed = rand.NewSource(time.Now().UnixNano())
 var gen = rand.New(seed)
+var mutex sync.Mutex
 
 type SessionWrapper struct{}
 
 func (lw SessionWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 	return plugin.ContextHandlerFunc(func(c context.Context, w http.ResponseWriter, r *http.Request) {
+
 		if c == nil {
 			c = context.Background()
 		}
 
-		c = context.WithValue(c, SessionKey, gen.Intn(999999999))
+		mutex.Lock()
+		val := gen.Intn(999999999)
+		mutex.Unlock()
+		c = context.WithValue(c, SessionKey, val)
 
 		h.ServeHTTPContext(c, w, r)
 	})
