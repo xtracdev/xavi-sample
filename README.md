@@ -186,3 +186,23 @@ To generate a panic, use this uri
 <pre>
 curl localhost:8080/quote/XTRAC
 </pre>
+
+### HTTPs Transport
+
+Set up mb using imposters-https.json, then configure xavisample thusly:
+
+NOTE: you will have to generate your own key and pem since the hostname on the cert needs to match your
+set up. You'll also need to change your hostname
+
+<pre>
+./xavisample add-server -address MACLB015803 -port 4443 -name quotesvr1
+./xavisample add-backend -name quote-backend -servers quotesvr1 -cacert-path ./cert.pem
+./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote,SessionId,Timing,Recovery
+./xavisample add-listener -name quote-listener -routes quote-route
+</pre>
+
+Boot the listener:
+
+<pre>
+./xavisample listen -ln quote-listener -address 0.0.0.0:8080
+</pre>
