@@ -189,14 +189,41 @@ curl localhost:8080/quote/XTRAC
 
 ### HTTPs Transport
 
-Set up mb using imposters-https.json, then configure xavisample thusly:
+To run the HTTPs transport sample, you'll need to generate your own signing cert and key. The cert and key are 
+both embedded in the mountebank configuration, and the cert file is referenced in the xavisample configuration.
 
-NOTE: you will have to generate your own key and pem since the hostname on the cert needs to match your
-set up. You'll also need to change your hostname
+Gophers can build `src/crypto/tls/generate_cert.go`
 
 <pre>
-./xavisample add-server -address MACLB015803 -port 4443 -name quotesvr1
-./xavisample add-backend -name quote-backend -servers quotesvr1 -cacert-path ./cert.pem
+cd $GOROOT
+cd src/crypto/tls
+go build generate_cert.go
+</pre>
+
+The generate the cert and key via:
+
+<pre>
+$GOROOT/src/crypto/tls/generate_cert -ca -host `hostname`
+</pre>
+
+Set up mb using imposters-https.json (after editing it to use your key and cert):
+
+<pre>
+curl -i -X POST -H 'Content-Type: application/json' -d@imposter-https.json http://127.0.0.1:2525/imposters
+</pre>
+ 
+Next then configure xavisample thusly:
+
+NOTE: you will have to generate your own key and pem since the hostname on the cert needs to match your
+set up. You'll also need to change the hostname for the server to match your hostname and tls key.
+
+<pre>
+export XAVI_KVSTORE_URL=file:///`pwd`/config
+</pre>
+ 
+<pre>
+./xavisample add-server -address `hostname` -port 4443 -name quotesvr1
+./xavisample add-backend -name quote-backend -servers quotesvr1 -cacert-path ./cert.pem -tls-only=true
 ./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote,SessionId,Timing,Recovery
 ./xavisample add-listener -name quote-listener -routes quote-route
 </pre>
