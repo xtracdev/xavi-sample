@@ -131,7 +131,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 
 		//Was there an error?
 		if rec.Code > 299 {
-			log.Println("damn cuz something wrong")
+			log.Println("SOAP service returned error")
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write(rec.Body.Bytes())
 			contributor.End(err)
