@@ -1,15 +1,15 @@
 package main
 
 import (
+	"errors"
+	log "github.com/Sirupsen/logrus"
 	"github.com/xtracdev/xavi/plugin"
+	"github.com/xtracdev/xavi/plugin/recovery"
+	"github.com/xtracdev/xavi/plugin/timing"
 	"github.com/xtracdev/xavi/runner"
 	"github.com/xtracdev/xavisample/quote"
 	"github.com/xtracdev/xavisample/session"
-	log "github.com/Sirupsen/logrus"
 	"os"
-	"github.com/xtracdev/xavi/plugin/recovery"
-	"errors"
-	"github.com/xtracdev/xavi/plugin/timing"
 )
 
 func NewCustomRecoveryWrapper() plugin.Wrapper {
@@ -17,7 +17,6 @@ func NewCustomRecoveryWrapper() plugin.Wrapper {
 		RecoveryContext: customerRecoveryContext,
 	}
 }
-
 
 var customerRecoveryContext = recovery.RecoveryContext{
 	LogFn: func(r interface{}) {

@@ -102,12 +102,24 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 
 		c, cf := context.WithCancel(c)
 
+		maybeTimeout := os.Getenv("MAYBE_TIMEOUT") != "" && rand.Float64() > 0.75
+
 		var wg sync.WaitGroup
 		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			h.ServeHTTPContext(c, rec, r)
-		}()
+
+		if maybeTimeout {
+			go func(ctx context.Context) {
+				defer wg.Done()
+				ctx, cf := context.WithTimeout(ctx, 100*time.Millisecond)
+				defer cf()
+				h.ServeHTTPContext(ctx, rec, r)
+			}(c)
+		} else {
+			go func() {
+				defer wg.Done()
+				h.ServeHTTPContext(c, rec, r)
+			}()
+		}
 
 		maybeCancel(cf)
 
@@ -147,7 +159,7 @@ func maybeCancel(cf context.CancelFunc) {
 	}
 
 	//Flip a coin
-	if rand.Float64() > 0.5 {
+	if rand.Float64() > 0.75 {
 		log.Println("coin toss says cancel")
 		cf()
 	}
