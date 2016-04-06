@@ -187,6 +187,12 @@ To generate a panic, use this uri
 curl localhost:8080/quote/XTRAC
 </pre>
 
+### Cancellation and Timeout
+
+Backend calls made via xavi can be made with a context that allows cancellation or timeout.
+In this sample, random cancellations and timeouts can be injected by setting the
+MAYBE_TIMEOUT and MAYBE_CANCEL environment variables to a non-empty string.
+
 ### HTTPs Transport
 
 To run the HTTPs transport sample, you'll need to generate your own signing cert and key. The cert and key are 
