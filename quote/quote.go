@@ -110,8 +110,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		if maybeTimeout {
 			go func(ctx context.Context) {
 				defer wg.Done()
-				ctx, cf := context.WithTimeout(ctx, 100*time.Millisecond)
-				defer cf()
+				ctx, _ = context.WithTimeout(ctx, 100*time.Millisecond)
 				h.ServeHTTPContext(ctx, rec, r)
 			}(c)
 		} else {
@@ -132,7 +131,7 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		//Was there an error?
 		if rec.Code > 299 {
 			log.Println("SOAP service returned error")
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(rec.Code)
 			w.Write(rec.Body.Bytes())
 			contributor.End(err)
 			return

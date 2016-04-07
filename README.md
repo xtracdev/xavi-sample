@@ -189,9 +189,24 @@ curl localhost:8080/quote/XTRAC
 
 ### Cancellation and Timeout
 
-Backend calls made via xavi can be made with a context that allows cancellation or timeout.
+Backend calls made via Xavi can be made with a context that allows cancellation or timeout.
 In this sample, random cancellations and timeouts can be injected by setting the
-MAYBE_TIMEOUT and MAYBE_CANCEL environment variables to a non-empty string.
+MAYBE_TIMEOUT and MAYBE_CANCEL environment variables to a non-empty string, e.g.
+
+<pre>
+MAYBE_CANCEL=1 MAYBE_TIMEOUT=1 ./xavisample listen -ln quote-listener -address 0.0.0.0:8080
+</pre>
+
+The plugin author may insert a cancellable context into the call flow to allow explicit cancelling 
+of the backend request, cancellation of the request based on a timeout, or a duration based timeout. 
+
+If the context times out or is cancelled while Xavi is invoking the backend service, Xavi will set
+the http response code based on the cancellation type, update the timing context for the backend with
+an error status, and return. While plugins can wait on the Done channel associated with the context,
+any manipulation of the http response should be done when call control returns to the plugin to avoid
+a race condition with Xavi's handling of the timeout/cancellation.
+
+
 
 ### HTTPs Transport
 
