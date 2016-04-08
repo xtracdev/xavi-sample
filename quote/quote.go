@@ -3,6 +3,7 @@ package quote
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/xtracdev/xavi/plugin"
@@ -13,9 +14,10 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
+	"sync"
 	"time"
-	"errors"
 )
 
 func extractResource(uri string) (string, error) {
@@ -97,11 +99,43 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		rec := httptest.NewRecorder()
 
 		c = timing.AddServiceNameToContext(c, "QuoteSoapService")
-		h.ServeHTTPContext(c, rec, r)
+
+		c, cf := context.WithCancel(c)
+
+		maybeTimeout := os.Getenv("MAYBE_TIMEOUT") != "" && rand.Float64() > 0.75
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+
+		if maybeTimeout {
+			go func(ctx context.Context) {
+				defer wg.Done()
+				ctx, _ = context.WithTimeout(ctx, 100*time.Millisecond)
+				h.ServeHTTPContext(ctx, rec, r)
+			}(c)
+		} else {
+			go func() {
+				defer wg.Done()
+				h.ServeHTTPContext(c, rec, r)
+			}()
+		}
+
+		maybeCancel(cf)
+
+		wg.Wait()
 
 		//Throw in a random service delay
 		delay := rand.Intn(100) + 1
 		time.Sleep(time.Duration(delay) * time.Millisecond)
+
+		//Was there an error?
+		if rec.Code > 299 {
+			log.Println("SOAP service returned error")
+			w.WriteHeader(rec.Code)
+			w.Write(rec.Body.Bytes())
+			contributor.End(err)
+			return
+		}
 
 		//Parse the recorded response to allow the quote price to be extracted
 		var response ResponseEnvelope
@@ -116,4 +150,16 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		w.Write([]byte(response.Body.GetLastTradePriceResponse.Price + "\n"))
 		contributor.End(nil)
 	})
+}
+
+func maybeCancel(cf context.CancelFunc) {
+	if os.Getenv("MAYBE_CANCEL") == "" {
+		return
+	}
+
+	//Flip a coin
+	if rand.Float64() > 0.75 {
+		log.Println("coin toss says cancel")
+		cf()
+	}
 }

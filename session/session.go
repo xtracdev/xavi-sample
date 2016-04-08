@@ -6,8 +6,8 @@ import (
 	"golang.org/x/net/context"
 	"math/rand"
 	"net/http"
-	"time"
 	"sync"
+	"time"
 )
 
 type sessionKey int
