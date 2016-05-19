@@ -30,7 +30,7 @@ func extractResource(uri string) (string, error) {
 
 }
 
-func NewQuoteWrapper() plugin.Wrapper {
+func NewQuoteWrapper(args ...interface{}) plugin.Wrapper {
 	return new(QuoteWrapper)
 }
 
