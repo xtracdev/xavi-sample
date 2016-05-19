@@ -12,7 +12,7 @@ import (
 	"os"
 )
 
-func NewCustomRecoveryWrapper() plugin.Wrapper {
+func NewCustomRecoveryWrapper(args ...interface{}) plugin.Wrapper {
 	return &recovery.RecoveryWrapper{
 		RecoveryContext: customerRecoveryContext,
 	}

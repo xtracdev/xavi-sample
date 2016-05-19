@@ -14,7 +14,7 @@ type sessionKey int
 
 const SessionKey sessionKey = 111
 
-func NewSessionWrapper() plugin.Wrapper {
+func NewSessionWrapper(args ...interface{}) plugin.Wrapper {
 	return new(SessionWrapper)
 }
 
