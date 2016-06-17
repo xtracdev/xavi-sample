@@ -2,6 +2,8 @@
 package session
 
 import (
+	"fmt"
+	"github.com/xtracdev/xavi/config"
 	"github.com/xtracdev/xavi/plugin"
 	"golang.org/x/net/context"
 	"math/rand"
@@ -15,6 +17,16 @@ type sessionKey int
 const SessionKey sessionKey = 111
 
 func NewSessionWrapper(args ...interface{}) plugin.Wrapper {
+	fmt.Printf("Active listener names%v\n", config.ActiveListenerNames())
+	for _, al := range config.ActiveListenerNames() {
+		sc := config.ActiveConfigForListener(al)
+		switch sc {
+		case nil:
+			fmt.Println("Nil service config for", al)
+		default:
+			sc.LogConfig()
+		}
+	}
 	return new(SessionWrapper)
 }
 
