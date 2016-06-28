@@ -187,6 +187,14 @@ To generate a panic, use this uri
 curl localhost:8080/quote/XTRAC
 </pre>
 
+### Config with endpoint healthcheck
+
+This is a modification to the above to add in a health check
+
+<pre>
+./xavisample add-server -address localhost -port 4545 -name quotesvr1
+</pre>
+
 ### Cancellation and Timeout
 
 Backend calls made via Xavi can be made with a context that allows cancellation or timeout.
