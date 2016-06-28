@@ -187,13 +187,31 @@ To generate a panic, use this uri
 curl localhost:8080/quote/XTRAC
 </pre>
 
-### Config with endpoint healthcheck
+### Config With Load Balancing and Healthcheck
+
+Montebank Setup:
+
+<pre>
+curl -i -X POST -H 'Content-Type: application/json' -d@imposter.json http://127.0.0.1:2525/imposters
+curl -i -X POST -H 'Content-Type: application/json' -d@imposter2.json http://127.0.0.1:2525/imposters
+</pre>
 
 This is a modification to the above to add in a health check
 
 <pre>
-./xavisample add-server -address localhost -port 4545 -name quotesvr1
+./xavisample add-server -address localhost -port 4545 -name quotesvr1 -health-check http-get -ping-uri /
+./xavisample add-server -address localhost -port 5454 -name quotesvr2 -health-check http-get -ping-uri /
+./xavisample add-backend -name quote-backend -servers quotesvr1,quotesvr2
+./xavisample add-route -name quote-route -backends quote-backend -base-uri /quote/ -plugins Quote,SessionId,Timing,Recovery
+./xavisample add-listener -name quote-listener -routes quote-route
 </pre>
+
+Run it:
+
+<pre>
+./xavisample listen -ln quote-listener -address 0.0.0.0:8080
+</pre>
+
 
 ### Cancellation and Timeout
 
