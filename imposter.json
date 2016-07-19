@@ -16,9 +16,6 @@
        </m:GetLastTradePriceResponse>
    </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>\n"
-          },
-          "_behaviors": {
-            "wait": 500
           }
         }
       ],
