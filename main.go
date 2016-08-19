@@ -10,6 +10,10 @@ import (
 	"github.com/xtracdev/xavisample/quote"
 	"github.com/xtracdev/xavisample/session"
 	"os"
+	"net/http"
+	"io/ioutil"
+	"github.com/xtracdev/xavi/kvstore"
+	"github.com/xtracdev/xavi/config"
 )
 
 func NewCustomRecoveryWrapper(args ...interface{}) plugin.Wrapper {
@@ -58,6 +62,41 @@ func registerPlugins() {
 	}
 }
 
+func healthy(endpoint string, transport *http.Transport) <-chan bool {
+	statusChannel := make(chan bool)
+
+	client := &http.Client{
+		Transport: transport,
+	}
+
+	go func() {
+
+		log.Info("Hello there, this is a custom health check.")
+
+		resp, err := client.Get(endpoint)
+		if err != nil {
+			log.Warn("Error doing get on healthcheck endpoint ", endpoint, " : ", err.Error())
+			statusChannel <- false
+			return
+		}
+
+		defer resp.Body.Close()
+		ioutil.ReadAll(resp.Body)
+
+		log.Infof("%s is healthy", endpoint)
+
+		statusChannel <- resp.StatusCode == 200
+	}()
+
+	return statusChannel
+}
+
+func registerMyHealthchecks(kvs kvstore.KVStore) error {
+	config.RegisterHealthCheckForBackend(kvs, "quote-backend", healthy)
+	return nil
+}
+
 func main() {
+	runner.AddKVSCallbackFunction(registerMyHealthchecks)
 	runner.Run(os.Args[1:], registerPlugins)
 }
