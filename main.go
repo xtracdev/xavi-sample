@@ -3,17 +3,18 @@ package main
 import (
 	"errors"
 	log "github.com/Sirupsen/logrus"
+	"github.com/xtracdev/xavi/config"
+	"github.com/xtracdev/xavi/kvstore"
 	"github.com/xtracdev/xavi/plugin"
 	"github.com/xtracdev/xavi/plugin/recovery"
 	"github.com/xtracdev/xavi/plugin/timing"
 	"github.com/xtracdev/xavi/runner"
 	"github.com/xtracdev/xavisample/quote"
 	"github.com/xtracdev/xavisample/session"
-	"os"
-	"net/http"
 	"io/ioutil"
-	"github.com/xtracdev/xavi/kvstore"
-	"github.com/xtracdev/xavi/config"
+	"net/http"
+	"os"
+	"time"
 )
 
 func NewCustomRecoveryWrapper(args ...interface{}) plugin.Wrapper {
@@ -67,6 +68,7 @@ func healthy(endpoint string, transport *http.Transport) <-chan bool {
 
 	client := &http.Client{
 		Transport: transport,
+		Timeout:   time.Second,
 	}
 
 	go func() {
