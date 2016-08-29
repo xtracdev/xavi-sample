@@ -1,6 +1,6 @@
 #!/bin/bash
 
-curl -i -X POST -H 'Content-Type: application/json' -d@hctimeout.json http://127.0.0.1:2525/imposters
+#Run server.js instead of mb to simulate timeout after headers written
 
 export XAVI_KVSTORE_URL=file:///`pwd`/config
 ./xavisample add-server -address localhost -port 4545 -name quotesvr1 -health-check-interval 2000 -health-check-timeout 500 -health-check custom-http -ping-uri /
