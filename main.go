@@ -98,7 +98,13 @@ func healthy(endpoint string, transport *http.Transport) <-chan bool {
 		log.Info("Nil error returned to health check")
 
 		defer resp.Body.Close()
-		ioutil.ReadAll(resp.Body)
+		_,err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Warnf("Error reading health check response: %v", err)
+			statusChannel <- false
+			return
+		}
+
 
 		statusChannel <- resp.StatusCode == 200
 	}()
