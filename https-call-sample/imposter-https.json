@@ -20,7 +20,7 @@
             </SOAP-ENV:Envelope>\n"
           },
           "_behaviors": {
-            "wait": 500
+            "wait": 10
           }
         }
       ]

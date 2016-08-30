@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"github.com/xtracdev/xavi/config"
 	_ "expvar"
+	"time"
 )
 
 func fatal(err error) {
@@ -45,17 +46,23 @@ func main() {
 	lb, err := loadbalancer.NewBackendLoadBalancer("quote-backend")
 	fatal(err)
 
-	req, err := http.NewRequest("GET", "https://hostname:4443", nil)
-	fatal(err)
+	for i := 1; i < 10000; i++ {
+		req, err := http.NewRequest("GET", "https://hostname:4443", nil)
+		fatal(err)
 
-	for i := 1; i < 100000; i++ {
 		resp, err := lb.DoWithLoadBalancer(context.Background(), req, true)
 		fatal(err)
 
-		defer resp.Body.Close()
-		b, err := ioutil.ReadAll(resp.Body)
+		_, err = ioutil.ReadAll(resp.Body)
 		fatal(err)
+		resp.Body.Close()
 
-		fmt.Printf("Read %s\n", string(b))
+		if i % 100 == 0 {
+			fmt.Printf("Done %d calls...\n", i)
+		}
 	}
+
+	time.Sleep(300 * time.Second)
+
+
 }
