@@ -3,17 +3,18 @@ package main
 import (
 	"errors"
 	log "github.com/Sirupsen/logrus"
+	"github.com/xtracdev/xavi/config"
+	"github.com/xtracdev/xavi/kvstore"
 	"github.com/xtracdev/xavi/plugin"
 	"github.com/xtracdev/xavi/plugin/recovery"
 	"github.com/xtracdev/xavi/plugin/timing"
 	"github.com/xtracdev/xavi/runner"
 	"github.com/xtracdev/xavisample/quote"
 	"github.com/xtracdev/xavisample/session"
-	"os"
-	"net/http"
 	"io/ioutil"
-	"github.com/xtracdev/xavi/kvstore"
-	"github.com/xtracdev/xavi/config"
+	"net/http"
+	"os"
+	"time"
 )
 
 func NewCustomRecoveryWrapper(args ...interface{}) plugin.Wrapper {
@@ -67,6 +68,7 @@ func healthy(endpoint string, transport *http.Transport) <-chan bool {
 
 	client := &http.Client{
 		Transport: transport,
+		Timeout:   time.Second,
 	}
 
 	go func() {
@@ -76,14 +78,33 @@ func healthy(endpoint string, transport *http.Transport) <-chan bool {
 		resp, err := client.Get(endpoint)
 		if err != nil {
 			log.Warn("Error doing get on healthcheck endpoint ", endpoint, " : ", err.Error())
+
+			//Check to see if there's a non-nil response: drain it if present
+			if resp != nil {
+				log.Info("clean up on aisle nine (non-nil response delivered with client error)")
+				defer resp.Body.Close()
+				b, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Infof("Error reading resp while cleaning up after error: %v\n", err)
+				} else {
+					log.Infof("discarded response body after handling error on healtcheck get: %s\n", b)
+				}
+			}
+
 			statusChannel <- false
 			return
 		}
 
-		defer resp.Body.Close()
-		ioutil.ReadAll(resp.Body)
+		log.Info("Nil error returned to health check")
 
-		log.Infof("%s is healthy", endpoint)
+		defer resp.Body.Close()
+		_,err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Warnf("Error reading health check response: %v", err)
+			statusChannel <- false
+			return
+		}
+
 
 		statusChannel <- resp.StatusCode == 200
 	}()
