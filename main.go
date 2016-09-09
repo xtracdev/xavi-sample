@@ -113,8 +113,7 @@ func healthy(endpoint string, transport *http.Transport) <-chan bool {
 }
 
 func registerMyHealthchecks(kvs kvstore.KVStore) error {
-	config.RegisterHealthCheckForBackend(kvs, "quote-backend", healthy)
-	return nil
+	return config.RegisterHealthCheckForBackend(kvs, "quote-backend", healthy)
 }
 
 func main() {
