@@ -1,17 +1,16 @@
 package main
 
 import (
-	"os"
-	"github.com/xtracdev/xavi/env"
-	"log"
+	_ "expvar"
 	"fmt"
+	"github.com/xtracdev/xavi/config"
+	"github.com/xtracdev/xavi/env"
 	"github.com/xtracdev/xavi/kvstore"
 	"github.com/xtracdev/xavi/loadbalancer"
-	"net/http"
-	"golang.org/x/net/context"
 	"io/ioutil"
-	"github.com/xtracdev/xavi/config"
-	_ "expvar"
+	"log"
+	"net/http"
+	"os"
 	"time"
 )
 
@@ -50,19 +49,18 @@ func main() {
 		req, err := http.NewRequest("GET", "https://hostname:4443", nil)
 		fatal(err)
 
-		resp, err := lb.DoWithLoadBalancer(context.Background(), req, true)
+		resp, err := lb.DoWithLoadBalancer(req, true)
 		fatal(err)
 
 		_, err = ioutil.ReadAll(resp.Body)
 		fatal(err)
 		resp.Body.Close()
 
-		if i % 100 == 0 {
+		if i%100 == 0 {
 			fmt.Printf("Done %d calls...\n", i)
 		}
 	}
 
 	time.Sleep(300 * time.Second)
-
 
 }

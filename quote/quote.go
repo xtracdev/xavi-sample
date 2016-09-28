@@ -2,6 +2,7 @@ package quote
 
 import (
 	"bytes"
+	"context"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -9,7 +10,6 @@ import (
 	"github.com/xtracdev/xavi/plugin"
 	"github.com/xtracdev/xavi/plugin/timing"
 	"github.com/xtracdev/xavisample/session"
-	"golang.org/x/net/context"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -45,11 +45,12 @@ func generateServiceName() string {
 
 type QuoteWrapper struct{}
 
-func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
-	return plugin.ContextHandlerFunc(func(c context.Context, w http.ResponseWriter, r *http.Request) {
+func (lw QuoteWrapper) Wrap(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 
 		//Extract the timer from the service context
-		end2endTimer := timing.TimerFromContext(c)
+		end2endTimer := timing.TimerFromContext(ctx)
 		if end2endTimer == nil {
 			http.Error(w, "No timer in call context", http.StatusInternalServerError)
 			return
@@ -73,11 +74,9 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 			panic(errors.New("priceless!"))
 		}
 
-		if c != nil {
-			sid, ok := c.Value(session.SessionKey).(int)
-			if ok {
-				log.Println("session:", sid, "symbol", resourceId)
-			}
+		sid, ok := ctx.Value(session.SessionKey).(int)
+		if ok {
+			log.Println("session:", sid, "symbol", resourceId)
 		}
 
 		//Convert the method to POST for SOAP, and set the soap service
@@ -98,9 +97,9 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 		r.Body = ioutil.NopCloser(bytes.NewReader(payloadBytes))
 		rec := httptest.NewRecorder()
 
-		c = timing.AddServiceNameToContext(c, "QuoteSoapService")
+		ctx = timing.AddServiceNameToContext(ctx, "QuoteSoapService")
 
-		c, cf := context.WithCancel(c)
+		ctx, cf := context.WithCancel(ctx)
 
 		maybeTimeout := os.Getenv("MAYBE_TIMEOUT") != "" && rand.Float64() > 0.75
 
@@ -111,12 +110,14 @@ func (lw QuoteWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
 			go func(ctx context.Context) {
 				defer wg.Done()
 				ctx, _ = context.WithTimeout(ctx, 100*time.Millisecond)
-				h.ServeHTTPContext(ctx, rec, r)
-			}(c)
+				newR := r.WithContext(ctx)
+				h.ServeHTTP(rec, newR)
+			}(ctx)
 		} else {
 			go func() {
 				defer wg.Done()
-				h.ServeHTTPContext(c, rec, r)
+				newR := r.WithContext(ctx)
+				h.ServeHTTP(rec, newR)
 			}()
 		}
 

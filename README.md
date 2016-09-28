@@ -6,7 +6,6 @@ of a soap service using [Xavi](https://github.com/xtracdev/xavi).
 ### Building the Sample
 
 <pre>
-go get golang.org/x/net/context
 go get github.com/Sirupsen/logrus
 go get github.com/xtracdev/xavi
 go build
@@ -71,8 +70,7 @@ it on startup, and provide some configuration with a route .
 
 ### Writing the plugin
 
-For this example, you need to have golang 1.5.x and enable vendoring support
-by setting the GO15VENDOREXPERIMENT environment variable to 1.
+For this example, you need to have golang 1.7.x.
 
 First, we grab Xavi from github via go get.
 
