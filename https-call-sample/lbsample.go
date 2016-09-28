@@ -49,7 +49,7 @@ func main() {
 		req, err := http.NewRequest("GET", "https://hostname:4443", nil)
 		fatal(err)
 
-		resp, err := lb.DoWithLoadBalancer(req.Context(), req, true)
+		resp, err := lb.DoWithLoadBalancer(req, true)
 		fatal(err)
 
 		_, err = ioutil.ReadAll(resp.Body)
