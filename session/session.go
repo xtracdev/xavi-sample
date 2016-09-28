@@ -2,10 +2,10 @@
 package session
 
 import (
+	"context"
 	"fmt"
 	"github.com/xtracdev/xavi/config"
 	"github.com/xtracdev/xavi/plugin"
-	"golang.org/x/net/context"
 	"math/rand"
 	"net/http"
 	"sync"
@@ -36,18 +36,15 @@ var mutex sync.Mutex
 
 type SessionWrapper struct{}
 
-func (lw SessionWrapper) Wrap(h plugin.ContextHandler) plugin.ContextHandler {
-	return plugin.ContextHandlerFunc(func(c context.Context, w http.ResponseWriter, r *http.Request) {
-
-		if c == nil {
-			c = context.Background()
-		}
+func (lw SessionWrapper) Wrap(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		mutex.Lock()
 		val := gen.Intn(999999999)
 		mutex.Unlock()
-		c = context.WithValue(c, SessionKey, val)
 
-		h.ServeHTTPContext(c, w, r)
+		newR := r.WithContext(context.WithValue(r.Context(), SessionKey, val))
+
+		h.ServeHTTP(w, newR)
 	})
 }
